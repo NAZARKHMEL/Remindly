@@ -50,11 +50,11 @@
 			<string>fetch</string>
 			<string>remote-notification</string>
 		</array>
-		<key>UIBackgroundModes</key>
-		<array>
-			<string>remote-notification</string>
-		</array>
-		<key>NSUserNotificationUsageDescription</key>
-		<string>Приложение использует уведомления для напоминаний</string>
+		<key>NSUserTrackingUsageDescription</key>
+		<string>Запрашиваем доступ для отправки уведомлений.</string>
+		<key>UIUserNotificationSettings</key>
+		<string>YES</string>
+		<key>UIRequiresFullScreen</key>
+		<string>YES</string>
 	</dict>
 </plist>
