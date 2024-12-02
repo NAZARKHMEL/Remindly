@@ -2,7 +2,6 @@ import Flutter
 import UIKit
 import UserNotifications
 
-@UIApplicationMain
 @objc class AppDelegate: FlutterAppDelegate {
   override func application(
     _ application: UIApplication,
