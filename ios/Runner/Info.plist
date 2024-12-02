@@ -13,7 +13,7 @@
 		<key>CFBundleInfoDictionaryVersion</key>
 		<string>6.0</string>
 		<key>CFBundleName</key>
-		<string>hello_world_app</string>
+		<string>remindly</string>
 		<key>CFBundlePackageType</key>
 		<string>APPL</string>
 		<key>CFBundleShortVersionString</key>
@@ -50,11 +50,11 @@
 			<string>fetch</string>
 			<string>remote-notification</string>
 		</array>
-		<key>NSUserTrackingUsageDescription</key>
-		<string>Запрашиваем доступ для отправки уведомлений.</string>
-		<key>UIUserNotificationSettings</key>
-		<string>YES</string>
-		<key>UIRequiresFullScreen</key>
-		<string>YES</string>
+
+		<key>NSAppTransportSecurity</key>
+		<dict>
+			<key>NSAllowsArbitraryLoads</key>
+			<true />
+		</dict>
 	</dict>
 </plist>

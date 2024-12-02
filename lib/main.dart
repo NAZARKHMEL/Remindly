@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:intl/intl.dart';
-import 'package:timezone/data/latest.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
+import 'package:timezone/data/latest.dart' as tz_data;
 
 void main() {
-  tz.initializeTimeZones();
   runApp(MyApp());
 }
 
@@ -14,135 +13,109 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: ReminderPage(),
+      title: 'Notification App',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: HelloWorldPage(),
     );
   }
 }
 
-class ReminderPage extends StatefulWidget {
+class HelloWorldPage extends StatefulWidget {
   @override
-  _ReminderPageState createState() => _ReminderPageState();
+  _HelloWorldPageState createState() => _HelloWorldPageState();
 }
 
-class _ReminderPageState extends State<ReminderPage> {
+class _HelloWorldPageState extends State<HelloWorldPage> {
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
-  DateTime? selectedDateTime;
-  final TextEditingController _messageController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    initializeNotifications();
+    tz_data.initializeTimeZones();
+    _initializeNotifications();
+    requestIOSPermissions();  // Запрос разрешений на уведомления
   }
 
-  Future<void> initializeNotifications() async {
-    const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+  // Инициализация уведомлений для iOS с использованием DarwinInitializationSettings
+  void _initializeNotifications() async {
+    final DarwinInitializationSettings darwinInitializationSettings =
+        DarwinInitializationSettings(
+      requestAlertPermission: true,
+      requestBadgePermission: true,
+      requestSoundPermission: true,
+    );
 
-    final DarwinInitializationSettings initializationSettingsIOS =
-        DarwinInitializationSettings();
-
-    final InitializationSettings initializationSettings =
-        InitializationSettings(
-      android: initializationSettingsAndroid,
-      iOS: initializationSettingsIOS,
+    final InitializationSettings initializationSettings = InitializationSettings(
+      iOS: darwinInitializationSettings,  // iOS и другие устройства Apple
     );
 
     await flutterLocalNotificationsPlugin.initialize(initializationSettings);
   }
 
-  Future<void> scheduleNotification(
-      String message, DateTime scheduledTime) async {
-    const AndroidNotificationDetails androidDetails =
-        AndroidNotificationDetails(
-      'reminder_channel_id',
-      'Reminder Notifications',
-      channelDescription: 'Channel for Reminder Notifications',
-      importance: Importance.max,
-      priority: Priority.high,
-    );
+  // Запрос разрешений на уведомления для iOS
+  Future<void> requestIOSPermissions() async {
+    final bool? result = await flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>()
+        ?.requestPermissions(
+          alert: true,
+          badge: true,
+          sound: true,
+        );
 
-    final DarwinNotificationDetails iosDetails = DarwinNotificationDetails();
-
-    final NotificationDetails notificationDetails =
-        NotificationDetails(android: androidDetails, iOS: iosDetails);
-
-    await flutterLocalNotificationsPlugin.zonedSchedule(
-      0,
-      'Напоминание',
-      message,
-      tz.TZDateTime.from(scheduledTime, tz.local),
-      notificationDetails,
-      androidAllowWhileIdle: true,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
-    );
+    if (result != null && result) {
+      print('Разрешение на уведомления получено');
+    } else {
+      print('Разрешение на уведомления не получено');
+    }
   }
 
-  void pickDateTime(BuildContext context) async {
-    final DateTime? pickedDate = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime.now(),
-      lastDate: DateTime(2101),
+  // Метод для отправки уведомления в заданное время и с заданным содержанием
+  Future<void> sendScheduledNotification(DateTime scheduledDate, String message) async {
+    final DarwinNotificationDetails darwinNotificationDetails = DarwinNotificationDetails();
+
+    final NotificationDetails notificationDetails = NotificationDetails(
+      iOS: darwinNotificationDetails,
     );
 
-    if (pickedDate != null) {
-      final TimeOfDay? pickedTime = await showTimePicker(
-        context: context,
-        initialTime: TimeOfDay.now(),
-      );
-
-      if (pickedTime != null) {
-        setState(() {
-          selectedDateTime = DateTime(
-            pickedDate.year,
-            pickedDate.month,
-            pickedDate.day,
-            pickedTime.hour,
-            pickedTime.minute,
-          );
-        });
-      }
-    }
+    // Добавляем uiLocalNotificationDateInterpretation
+    await flutterLocalNotificationsPlugin.zonedSchedule(
+      0, // ID уведомления
+      'Напоминание', // Заголовок уведомления
+      message, // Текст уведомления
+      tz.TZDateTime.from(scheduledDate, tz.local), 
+      notificationDetails,
+      payload: 'custom_payload',
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime, // Интерпретация времени как абсолютного
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Напоминания')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
+      appBar: AppBar(
+        title: Text('Notification App'),
+      ),
+      body: Center(
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            TextField(
-              controller: _messageController,
-              decoration: InputDecoration(labelText: 'Сообщение'),
-            ),
-            SizedBox(height: 16),
             Text(
-              selectedDateTime != null
-                  ? 'Выбрано: ${DateFormat('yyyy-MM-dd – kk:mm').format(selectedDateTime!)}'
-                  : 'Дата и время не выбраны',
+              'Hello, World!',
+              style: TextStyle(fontSize: 24),
             ),
-            ElevatedButton(
-              onPressed: () => pickDateTime(context),
-              child: Text('Выбрать дату и время'),
-            ),
-            SizedBox(height: 16),
+            SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                if (selectedDateTime != null &&
-                    _messageController.text.isNotEmpty) {
-                  scheduleNotification(
-                      _messageController.text, selectedDateTime!);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Напоминание создано!')),
-                  );
-                }
+                // Пример: Отправляем уведомление через 10 секунд с заданным текстом
+                DateTime scheduledDate = DateTime.now().add(Duration(seconds: 10));
+                String message = 'Это уведомление для вас!';
+                sendScheduledNotification(scheduledDate, message);
               },
-              child: Text('Создать напоминание'),
+              child: Text('Запланировать уведомление'),
             ),
           ],
         ),
