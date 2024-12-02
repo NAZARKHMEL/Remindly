@@ -5,7 +5,7 @@
 		<key>CFBundleDevelopmentRegion</key>
 		<string>$(DEVELOPMENT_LANGUAGE)</string>
 		<key>CFBundleDisplayName</key>
-		<string>Hello World App</string>
+		<string>Remindly</string>
 		<key>CFBundleExecutable</key>
 		<string>$(EXECUTABLE_NAME)</string>
 		<key>CFBundleIdentifier</key>
@@ -50,11 +50,11 @@
 			<string>fetch</string>
 			<string>remote-notification</string>
 		</array>
-		<key>NSUserTrackingUsageDescription</key>
-		<string>Запрашиваем доступ для отправки уведомлений.</string>
-		<key>UIUserNotificationSettings</key>
-		<string>YES</string>
-		<key>UIRequiresFullScreen</key>
-		<string>YES</string>
+		<key>UIBackgroundModes</key>
+		<array>
+			<string>remote-notification</string>
+		</array>
+		<key>NSUserNotificationUsageDescription</key>
+		<string>Приложение использует уведомления для напоминаний</string>
 	</dict>
 </plist>
