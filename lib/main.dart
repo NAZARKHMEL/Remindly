@@ -1,23 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:awesome_notifications/awesome_notifications.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:intl/intl.dart';
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
 
 void main() {
-  WidgetsFlutterBinding.ensureInitialized();
-
-  AwesomeNotifications().initialize(
-    'resource://drawable/res_app_icon',
-    [
-      NotificationChannel(
-        channelKey: 'reminder_channel',
-        channelName: 'Напоминания',
-        channelDescription: 'Канал для напоминаний',
-        defaultColor: Color(0xFF9D50DD),
-        ledColor: Colors.white,
-        importance: NotificationImportance.High,
-      )
-    ],
-  );
-
+  tz.initializeTimeZones();
   runApp(MyApp());
 }
 
@@ -37,39 +25,58 @@ class ReminderPage extends StatefulWidget {
 }
 
 class _ReminderPageState extends State<ReminderPage> {
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+      FlutterLocalNotificationsPlugin();
   DateTime? selectedDateTime;
   final TextEditingController _messageController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    AwesomeNotifications().isNotificationAllowed().then((isAllowed) {
-      if (!isAllowed) {
-        AwesomeNotifications().requestPermissionToSendNotifications();
-      }
-    });
+    initializeNotifications();
   }
 
-  Future<void> createReminderNotification(
+  Future<void> initializeNotifications() async {
+    const AndroidInitializationSettings initializationSettingsAndroid =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
+
+    final DarwinInitializationSettings initializationSettingsIOS =
+        DarwinInitializationSettings();
+
+    final InitializationSettings initializationSettings =
+        InitializationSettings(
+      android: initializationSettingsAndroid,
+      iOS: initializationSettingsIOS,
+    );
+
+    await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+  }
+
+  Future<void> scheduleNotification(
       String message, DateTime scheduledTime) async {
-    await AwesomeNotifications().createNotification(
-      content: NotificationContent(
-        id: 0,
-        channelKey: 'reminder_channel',
-        title: 'Напоминание',
-        body: message,
-        notificationLayout: NotificationLayout.Default,
-      ),
-      schedule: NotificationCalendar(
-        year: scheduledTime.year,
-        month: scheduledTime.month,
-        day: scheduledTime.day,
-        hour: scheduledTime.hour,
-        minute: scheduledTime.minute,
-        second: 0,
-        timeZone: await AwesomeNotifications().getLocalTimeZoneIdentifier(),
-        repeats: false,
-      ),
+    const AndroidNotificationDetails androidDetails =
+        AndroidNotificationDetails(
+      'reminder_channel_id',
+      'Reminder Notifications',
+      channelDescription: 'Channel for Reminder Notifications',
+      importance: Importance.max,
+      priority: Priority.high,
+    );
+
+    final DarwinNotificationDetails iosDetails = DarwinNotificationDetails();
+
+    final NotificationDetails notificationDetails =
+        NotificationDetails(android: androidDetails, iOS: iosDetails);
+
+    await flutterLocalNotificationsPlugin.zonedSchedule(
+      0,
+      'Напоминание',
+      message,
+      tz.TZDateTime.from(scheduledTime, tz.local),
+      notificationDetails,
+      androidAllowWhileIdle: true,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
     );
   }
 
@@ -116,7 +123,7 @@ class _ReminderPageState extends State<ReminderPage> {
             SizedBox(height: 16),
             Text(
               selectedDateTime != null
-                  ? 'Выбрано: ${selectedDateTime.toString()}'
+                  ? 'Выбрано: ${DateFormat('yyyy-MM-dd – kk:mm').format(selectedDateTime!)}'
                   : 'Дата и время не выбраны',
             ),
             ElevatedButton(
@@ -128,10 +135,8 @@ class _ReminderPageState extends State<ReminderPage> {
               onPressed: () {
                 if (selectedDateTime != null &&
                     _messageController.text.isNotEmpty) {
-                  createReminderNotification(
-                    _messageController.text,
-                    selectedDateTime!,
-                  );
+                  scheduleNotification(
+                      _messageController.text, selectedDateTime!);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Напоминание создано!')),
                   );
