@@ -30,16 +30,17 @@ class HelloWorldPage extends StatefulWidget {
 class _HelloWorldPageState extends State<HelloWorldPage> {
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
+  final TextEditingController _messageController = TextEditingController();
+  DateTime? _selectedDateTime;
 
   @override
   void initState() {
     super.initState();
     tz_data.initializeTimeZones();
     _initializeNotifications();
-    requestIOSPermissions();  // Запрос разрешений на уведомления
+    requestIOSPermissions();
   }
 
-  // Инициализация уведомлений для iOS с использованием DarwinInitializationSettings
   void _initializeNotifications() async {
     final DarwinInitializationSettings darwinInitializationSettings =
         DarwinInitializationSettings(
@@ -49,13 +50,12 @@ class _HelloWorldPageState extends State<HelloWorldPage> {
     );
 
     final InitializationSettings initializationSettings = InitializationSettings(
-      iOS: darwinInitializationSettings,  // iOS и другие устройства Apple
+      iOS: darwinInitializationSettings,
     );
 
     await flutterLocalNotificationsPlugin.initialize(initializationSettings);
   }
 
-  // Запрос разрешений на уведомления для iOS
   Future<void> requestIOSPermissions() async {
     final bool? result = await flutterLocalNotificationsPlugin
         .resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>()
@@ -72,24 +72,52 @@ class _HelloWorldPageState extends State<HelloWorldPage> {
     }
   }
 
-  // Метод для отправки уведомления в заданное время и с заданным содержанием
   Future<void> sendScheduledNotification(DateTime scheduledDate, String message) async {
     final DarwinNotificationDetails darwinNotificationDetails = DarwinNotificationDetails();
 
     final NotificationDetails notificationDetails = NotificationDetails(
       iOS: darwinNotificationDetails,
     );
+
     int notificationId = DateTime.now().millisecondsSinceEpoch.remainder(100000);
+
     await flutterLocalNotificationsPlugin.zonedSchedule(
-      notificationId, 
-      'Напоминание', 
+      notificationId,
+      'Напоминание',
       message,
-      tz.TZDateTime.from(scheduledDate, tz.local), 
+      tz.TZDateTime.from(scheduledDate, tz.local),
       notificationDetails,
       payload: 'custom_payload',
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
+      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
     );
+  }
+
+  Future<void> _selectDateTime(BuildContext context) async {
+    final DateTime? pickedDate = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime(2100),
+    );
+
+    if (pickedDate != null) {
+      final TimeOfDay? pickedTime = await showTimePicker(
+        context: context,
+        initialTime: TimeOfDay.now(),
+      );
+
+      if (pickedTime != null) {
+        setState(() {
+          _selectedDateTime = DateTime(
+            pickedDate.year,
+            pickedDate.month,
+            pickedDate.day,
+            pickedTime.hour,
+            pickedTime.minute,
+          );
+        });
+      }
+    }
   }
 
   @override
@@ -98,21 +126,46 @@ class _HelloWorldPageState extends State<HelloWorldPage> {
       appBar: AppBar(
         title: Text('Notification App'),
       ),
-      body: Center(
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              'Hello, World!',
-              style: TextStyle(fontSize: 24),
+            TextField(
+              controller: _messageController,
+              decoration: InputDecoration(
+                border: OutlineInputBorder(),
+                labelText: 'Введите текст уведомления',
+              ),
+            ),
+            SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () => _selectDateTime(context),
+                    child: Text(
+                      _selectedDateTime == null
+                          ? 'Выбрать дату и время'
+                          : DateFormat('yyyy-MM-dd HH:mm').format(_selectedDateTime!),
+                    ),
+                  ),
+                ),
+              ],
             ),
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
-                // Пример: Отправляем уведомление через 10 секунд с заданным текстом
-                DateTime scheduledDate = DateTime.now().add(Duration(seconds: 10));
-                String message = 'Это уведомление для вас!';
-                sendScheduledNotification(scheduledDate, message);
+                if (_messageController.text.isNotEmpty && _selectedDateTime != null) {
+                  sendScheduledNotification(_selectedDateTime!, _messageController.text);
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text('Уведомление запланировано!'),
+                  ));
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text('Пожалуйста, заполните все поля.'),
+                  ));
+                }
               },
               child: Text('Запланировать уведомление'),
             ),
