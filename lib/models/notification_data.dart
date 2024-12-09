@@ -9,12 +9,21 @@ class NotificationData {
     required this.scheduledDate,
   });
 
-  // Метод для создания дефолтного уведомления
-  static NotificationData createDefault() {
+  // Convert a NotificationData object into a JSON object
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'message': message,
+      'scheduledDate': scheduledDate.toIso8601String(),
+    };
+  }
+
+  // Convert a JSON object into a NotificationData object
+  factory NotificationData.fromJson(Map<String, dynamic> json) {
     return NotificationData(
-      id: DateTime.now().millisecondsSinceEpoch.remainder(100000), // Генерация уникального ID
-      message: 'Default Test Notification',
-      scheduledDate: DateTime.now().add(Duration(minutes: 1)), // Срабатывает через 1 минуту
+      id: json['id'],
+      message: json['message'],
+      scheduledDate: DateTime.parse(json['scheduledDate']),
     );
   }
 }

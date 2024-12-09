@@ -3,8 +3,9 @@ import 'package:intl/intl.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest.dart' as tz_data;
-import 'manage_notifications_page.dart';
+import 'manage_notifications_page.dart';  // Import the ManageNotificationsPage
 import '../models/notification_data.dart';
+import '../sharedpreferences.dart';
 
 class HelloWorldPage extends StatefulWidget {
   @override
@@ -16,44 +17,17 @@ class _HelloWorldPageState extends State<HelloWorldPage> {
       FlutterLocalNotificationsPlugin();
   final TextEditingController _messageController = TextEditingController();
   DateTime? _selectedDateTime;
-  final List<NotificationData> _notifications = [];
+  List<NotificationData> _notifications = [];
 
   @override
   void initState() {
     super.initState();
-    tz_data.initializeTimeZones();
-    _initializeNotifications();
-    requestIOSPermissions();
-    _addDefaultNotification();
+    _loadNotifications();
   }
 
-  void _initializeNotifications() async {
-    final DarwinInitializationSettings darwinInitializationSettings =
-        DarwinInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
-    );
-    final InitializationSettings initializationSettings =
-        InitializationSettings(iOS: darwinInitializationSettings);
-    await flutterLocalNotificationsPlugin.initialize(initializationSettings);
-  }
-
-  Future<void> requestIOSPermissions() async {
-    final bool? result = await flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
-            IOSFlutterLocalNotificationsPlugin>()
-        ?.requestPermissions(
-          alert: true,
-          badge: true,
-          sound: true,
-        );
-
-    if (result != null && result) {
-      print('Разрешение на уведомления получено');
-    } else {
-      print('Разрешение на уведомления не получено');
-    }
+  Future<void> _loadNotifications() async {
+    _notifications = await NotificationStorage.loadNotifications();
+    setState(() {});
   }
 
   Future<void> _selectDateTime(BuildContext context) async {
@@ -82,20 +56,6 @@ class _HelloWorldPageState extends State<HelloWorldPage> {
     }
   }
 
-  void _addDefaultNotification() {
-    final defaultNotification = NotificationData(
-      id: 1,
-      message: 'Default Test Notification', 
-      scheduledDate: DateTime.now().add(Duration(minutes: 1)), // Через 1 минуту
-    );
-
-    setState(() {
-      _notifications.add(defaultNotification);
-    });
-
-    sendScheduledNotification(defaultNotification.scheduledDate, defaultNotification.message);
-  }
-
   Future<void> _addNotification() async {
     if (_messageController.text.isEmpty || _selectedDateTime == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -112,20 +72,23 @@ class _HelloWorldPageState extends State<HelloWorldPage> {
       scheduledDate: _selectedDateTime!,
     );
 
-    await sendScheduledNotification(
-      newNotification.scheduledDate,
-      newNotification.message,
-    );
+    // Send scheduled notification
+    await sendScheduledNotification(newNotification.scheduledDate, newNotification.message);
 
+    // Add the new notification to the list
+    _notifications.add(newNotification);
+
+    // Save the updated notifications list to SharedPreferences
+    await NotificationStorage.saveNotifications(_notifications);
+
+    // Clear input and update state
     setState(() {
-      _notifications.add(newNotification);
       _messageController.clear();
       _selectedDateTime = null;
     });
   }
 
-  Future<void> sendScheduledNotification(
-      DateTime scheduledDate, String message) async {
+  Future<void> sendScheduledNotification(DateTime scheduledDate, String message) async {
     final DarwinNotificationDetails darwinNotificationDetails =
         DarwinNotificationDetails();
     final NotificationDetails notificationDetails =
@@ -143,41 +106,19 @@ class _HelloWorldPageState extends State<HelloWorldPage> {
     );
   }
 
-  Future<void> cancelNotification(int notificationId) async {
-    await flutterLocalNotificationsPlugin.cancel(notificationId);
-    setState(() {
-      _notifications.removeWhere((notification) => notification.id == notificationId);
-    });
-  }
-
-  // Метод для обновления уведомления после редактирования
-  void _editNotification(NotificationData notification, DateTime newDate, String newMessage) {
-    setState(() {
-      notification.scheduledDate = newDate;
-      notification.message = newMessage;
-    });
-
-    sendScheduledNotification(newDate, newMessage); // Переносим уведомление с новой датой
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Notification App'),
         actions: [
+          // Add an IconButton to navigate to ManageNotificationsPage
           IconButton(
             icon: Icon(Icons.list),
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(
-                  builder: (context) => ManageNotificationsPage(
-                    notifications: _notifications,
-                    cancelNotification: cancelNotification,
-                    editNotification: _editNotification
-                  ),
-                ),
+                MaterialPageRoute(builder: (context) => ManageNotificationsPage()),
               );
             },
           ),
@@ -200,8 +141,7 @@ class _HelloWorldPageState extends State<HelloWorldPage> {
                     child: Text(
                       _selectedDateTime == null
                           ? 'Выбрать дату'
-                          : DateFormat('yyyy-MM-dd HH:mm')
-                              .format(_selectedDateTime!),
+                          : DateFormat('yyyy-MM-dd HH:mm').format(_selectedDateTime!),
                     ),
                   ),
                 ),
