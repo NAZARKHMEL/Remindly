@@ -1,123 +1,70 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:intl/intl.dart';
-import 'package:timezone/timezone.dart' as tz;
-import 'package:timezone/data/latest.dart' as tz_data;
+import 'package:awesome_notifications/awesome_notifications.dart';
 
 void main() {
-  runApp(MyApp());
+  WidgetsFlutterBinding.ensureInitialized();
+  AwesomeNotifications().initialize(
+    null,
+    [
+      NotificationChannel(
+        channelKey: 'basic_channel',
+        channelName: 'Basic notifications',
+        channelDescription: 'Notification channel for basic tests',
+        defaultColor: Color(0xFF9D50DD),
+        importance: NotificationImportance.High,
+        channelShowBadge: true,
+      )
+    ],
+  );
+
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Notification App',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: HelloWorldPage(),
+      title: 'Reminder App',
+      home: ReminderHomePage(),
     );
   }
 }
 
-class HelloWorldPage extends StatefulWidget {
-  @override
-  _HelloWorldPageState createState() => _HelloWorldPageState();
-}
-
-class _HelloWorldPageState extends State<HelloWorldPage> {
-  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
-      FlutterLocalNotificationsPlugin();
-
-  @override
-  void initState() {
-    super.initState();
-    tz_data.initializeTimeZones();
-    _initializeNotifications();
-    requestIOSPermissions();  // Запрос разрешений на уведомления
-  }
-
-  // Инициализация уведомлений для iOS с использованием DarwinInitializationSettings
-  void _initializeNotifications() async {
-    final DarwinInitializationSettings darwinInitializationSettings =
-        DarwinInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
-    );
-
-    final InitializationSettings initializationSettings = InitializationSettings(
-      iOS: darwinInitializationSettings,  // iOS и другие устройства Apple
-    );
-
-    await flutterLocalNotificationsPlugin.initialize(initializationSettings);
-  }
-
-  // Запрос разрешений на уведомления для iOS
-  Future<void> requestIOSPermissions() async {
-    final bool? result = await flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>()
-        ?.requestPermissions(
-          alert: true,
-          badge: true,
-          sound: true,
-        );
-
-    if (result != null && result) {
-      print('Разрешение на уведомления получено');
-    } else {
-      print('Разрешение на уведомления не получено');
-    }
-  }
-
-  // Метод для отправки уведомления в заданное время и с заданным содержанием
-  Future<void> sendScheduledNotification(DateTime scheduledDate, String message) async {
-    final DarwinNotificationDetails darwinNotificationDetails = DarwinNotificationDetails();
-
-    final NotificationDetails notificationDetails = NotificationDetails(
-      iOS: darwinNotificationDetails,
-    );
-
-    // Добавляем uiLocalNotificationDateInterpretation
-    await flutterLocalNotificationsPlugin.zonedSchedule(
-      0, // ID уведомления
-      'Напоминание', // Заголовок уведомления
-      message, // Текст уведомления
-      tz.TZDateTime.from(scheduledDate, tz.local), 
-      notificationDetails,
-      payload: 'custom_payload',
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime, // Интерпретация времени как абсолютного
-    );
-  }
+class ReminderHomePage extends StatelessWidget {
+  const ReminderHomePage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Notification App'),
+        title: const Text('Напоминания'),
       ),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'Hello, World!',
-              style: TextStyle(fontSize: 24),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: () {
-                // Пример: Отправляем уведомление через 10 секунд с заданным текстом
-                DateTime scheduledDate = DateTime.now().add(Duration(seconds: 10));
-                String message = 'Это уведомление для вас!';
-                sendScheduledNotification(scheduledDate, message);
-              },
-              child: Text('Запланировать уведомление'),
-            ),
-          ],
+        child: ElevatedButton(
+          onPressed: () {
+            // Генерируем уникальный идентификатор
+            int uniqueId = DateTime.now().millisecondsSinceEpoch.remainder(100000);
+
+            // Создаем напоминание
+            AwesomeNotifications().createNotification(
+              content: NotificationContent(
+                id: uniqueId, // Уникальный ID для каждого уведомления
+                channelKey: 'basic_channel',
+                title: 'Напоминание!',
+                body: 'Это ваше напоминание.',
+              ),
+              schedule: NotificationCalendar.fromDate(
+                date: DateTime.now().add(Duration(seconds: 5)), // через 5 секунд
+              ),
+            );
+
+            // Выводим в консоль ID напоминания (удобно для отладки)
+            print('Notification created with ID: $uniqueId');
+          },
+          child: const Text('Создать напоминание'),
         ),
       ),
     );

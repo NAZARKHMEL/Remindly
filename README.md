@@ -1,4 +1,4 @@
-# hello_world_app
+# Remindly
 
 A new Flutter project.
 
