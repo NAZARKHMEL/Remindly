@@ -1,6 +1,6 @@
 {
-    "name": "hello_world_app",
-    "short_name": "hello_world_app",
+    "name": "Remindly",
+    "short_name": "Remindly",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
