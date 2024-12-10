@@ -23,6 +23,38 @@ class _HelloWorldPageState extends State<HelloWorldPage> {
   void initState() {
     super.initState();
     _loadNotifications();
+    tz_data.initializeTimeZones();
+    _initializeNotifications();
+    requestIOSPermissions();
+  }
+
+  void _initializeNotifications() async {
+    final DarwinInitializationSettings darwinInitializationSettings =
+        DarwinInitializationSettings(
+      requestAlertPermission: true,
+      requestBadgePermission: true,
+      requestSoundPermission: true,
+    );
+    final InitializationSettings initializationSettings =
+        InitializationSettings(iOS: darwinInitializationSettings);
+    await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+  }
+
+  Future<void> requestIOSPermissions() async {
+    final bool? result = await flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+            IOSFlutterLocalNotificationsPlugin>()
+        ?.requestPermissions(
+          alert: true,
+          badge: true,
+          sound: true,
+        );
+
+    if (result != null && result) {
+      print('Разрешение на уведомления получено');
+    } else {
+      print('Разрешение на уведомления не получено');
+    }
   }
 
   Future<void> _loadNotifications() async {
@@ -97,7 +129,7 @@ class _HelloWorldPageState extends State<HelloWorldPage> {
     } catch (e) {
       // Покажем ошибку, если что-то пошло не так
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Ошибка при добавлении напоминания')),
+        SnackBar(content: Text('Ошибка: $e')),
       );
       print('Error adding notification: $e');
     }
