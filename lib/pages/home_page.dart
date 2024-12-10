@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest.dart' as tz_data;
-import 'manage_notifications_page.dart';  // Import the ManageNotificationsPage
+import 'manage_notifications_page.dart'; // Import the ManageNotificationsPage
 import '../models/notification_data.dart';
 import '../sharedpreferences.dart';
 
@@ -58,37 +58,53 @@ class _HelloWorldPageState extends State<HelloWorldPage> {
 
   Future<void> _addNotification() async {
     if (_messageController.text.isEmpty || _selectedDateTime == null) {
+      // Покажем ошибку, если нет сообщения или даты
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Введите сообщение и выберите дату')),
       );
       return;
     }
 
-    final notificationId =
-        DateTime.now().millisecondsSinceEpoch.remainder(100000);
-    final newNotification = NotificationData(
-      id: notificationId,
-      message: _messageController.text,
-      scheduledDate: _selectedDateTime!,
-    );
+    try {
+      final notificationId =
+          DateTime.now().millisecondsSinceEpoch.remainder(100000);
+      final newNotification = NotificationData(
+        id: notificationId,
+        message: _messageController.text,
+        scheduledDate: _selectedDateTime!,
+      );
 
-    // Send scheduled notification
-    await sendScheduledNotification(newNotification.scheduledDate, newNotification.message);
+      // Отправляем уведомление
+      await sendScheduledNotification(
+          newNotification.scheduledDate, newNotification.message);
 
-    // Add the new notification to the list
-    _notifications.add(newNotification);
+      // Добавляем новое уведомление в список
+      _notifications.add(newNotification);
 
-    // Save the updated notifications list to SharedPreferences
-    await NotificationStorage.saveNotifications(_notifications);
+      // Сохраняем обновленный список уведомлений в SharedPreferences
+      await NotificationStorage.saveNotifications(_notifications);
 
-    // Clear input and update state
-    setState(() {
-      _messageController.clear();
-      _selectedDateTime = null;
-    });
+      // Покажем сообщение об успехе
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Напоминание успешно добавлено')),
+      );
+
+      // Очищаем поля ввода и обновляем состояние
+      setState(() {
+        _messageController.clear();
+        _selectedDateTime = null;
+      });
+    } catch (e) {
+      // Покажем ошибку, если что-то пошло не так
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Ошибка при добавлении напоминания')),
+      );
+      print('Error adding notification: $e');
+    }
   }
 
-  Future<void> sendScheduledNotification(DateTime scheduledDate, String message) async {
+  Future<void> sendScheduledNotification(
+      DateTime scheduledDate, String message) async {
     final DarwinNotificationDetails darwinNotificationDetails =
         DarwinNotificationDetails();
     final NotificationDetails notificationDetails =
@@ -118,7 +134,8 @@ class _HelloWorldPageState extends State<HelloWorldPage> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => ManageNotificationsPage()),
+                MaterialPageRoute(
+                    builder: (context) => ManageNotificationsPage()),
               );
             },
           ),
@@ -141,7 +158,8 @@ class _HelloWorldPageState extends State<HelloWorldPage> {
                     child: Text(
                       _selectedDateTime == null
                           ? 'Выбрать дату'
-                          : DateFormat('yyyy-MM-dd HH:mm').format(_selectedDateTime!),
+                          : DateFormat('yyyy-MM-dd HH:mm')
+                              .format(_selectedDateTime!),
                     ),
                   ),
                 ),
