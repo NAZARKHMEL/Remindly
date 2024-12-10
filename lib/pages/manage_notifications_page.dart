@@ -3,11 +3,19 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'edit_notification_page.dart';
 import '../models/notification_data.dart';
-import '../sharedpreferences.dart';  // Import your NotificationStorage
+import '../sharedpreferences.dart'; 
+import 'package:timezone/timezone.dart' as tz;
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:timezone/data/latest.dart' as tz_data;
 
 class ManageNotificationsPage extends StatefulWidget {
+  final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
+
+  ManageNotificationsPage({required this.flutterLocalNotificationsPlugin});
+
   @override
-  _ManageNotificationsPageState createState() => _ManageNotificationsPageState();
+  _ManageNotificationsPageState createState() =>
+      _ManageNotificationsPageState();
 }
 
 class _ManageNotificationsPageState extends State<ManageNotificationsPage> {
@@ -17,29 +25,46 @@ class _ManageNotificationsPageState extends State<ManageNotificationsPage> {
   void initState() {
     super.initState();
     _loadNotifications();
+    tz_data.initializeTimeZones();
   }
 
-  // Load notifications from SharedPreferences using NotificationStorage
   Future<void> _loadNotifications() async {
     _notifications = await NotificationStorage.loadNotifications();
     setState(() {});
   }
 
-  // Delete a notification
   Future<void> _deleteNotification(int id) async {
     _notifications.removeWhere((notification) => notification.id == id);
-    await NotificationStorage.saveNotifications(_notifications);  // Save updated list
+    await widget.flutterLocalNotificationsPlugin.cancel(id); // Удаляем уведомление из плагина
+    await NotificationStorage.saveNotifications(_notifications);
     setState(() {});
   }
 
-  // Update a notification
-  void _updateNotification(NotificationData notification, DateTime newDate, String newMessage) {
+  void _updateNotification(
+      NotificationData notification, DateTime newDate, String newMessage) {
     notification.scheduledDate = newDate;
     notification.message = newMessage;
-
-    // Save updated notifications list to SharedPreferences
+    // Обновляем уведомление в плагине
+    widget.flutterLocalNotificationsPlugin.cancel(notification.id); // Сначала удаляем старое
     NotificationStorage.saveNotifications(_notifications);
+    _addNotificationToPlugin(notification); // Добавляем обновленное уведомление
     setState(() {});
+  }
+
+  Future<void> _addNotificationToPlugin(NotificationData notification) async {
+    final notificationDetails = NotificationDetails(
+      iOS: DarwinNotificationDetails(),
+    );
+    await widget.flutterLocalNotificationsPlugin.zonedSchedule(
+      notification.id,
+      'Напоминание',
+      notification.message,
+      tz.TZDateTime.from(notification.scheduledDate, tz.local),
+      notificationDetails,
+      payload: 'custom_payload',
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
+    );
   }
 
   @override

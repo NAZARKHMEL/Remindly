@@ -167,7 +167,11 @@ class _HelloWorldPageState extends State<HelloWorldPage> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                    builder: (context) => ManageNotificationsPage()),
+                  builder: (context) => ManageNotificationsPage(
+                    flutterLocalNotificationsPlugin:
+                        flutterLocalNotificationsPlugin,
+                  ),
+                ),
               );
             },
           ),
