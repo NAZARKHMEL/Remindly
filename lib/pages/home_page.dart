@@ -106,9 +106,15 @@ class _HelloWorldPageState extends State<HelloWorldPage> {
         scheduledDate: _selectedDateTime!,
       );
 
+<<<<<<< HEAD
+    // Send scheduled notification
+    await sendScheduledNotification(
+        newNotification.scheduledDate, newNotification.message);
+=======
       // Отправляем уведомление
       await sendScheduledNotification(
           newNotification.scheduledDate, newNotification.message);
+>>>>>>> d3090b9a11170965166d3e1cc7304c151f48aaac
 
       // Добавляем новое уведомление в список
       _notifications.add(newNotification);
@@ -116,6 +122,16 @@ class _HelloWorldPageState extends State<HelloWorldPage> {
       // Сохраняем обновленный список уведомлений в SharedPreferences
       await NotificationStorage.saveNotifications(_notifications);
 
+<<<<<<< HEAD
+    // Refresh the list of notifications and clear the input fields
+    setState(() {
+      _messageController.clear();
+      _selectedDateTime = null;
+    });
+
+    // Reload notifications after saving
+    await _loadNotifications();
+=======
       // Покажем сообщение об успехе
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Напоминание успешно добавлено')),
@@ -133,6 +149,7 @@ class _HelloWorldPageState extends State<HelloWorldPage> {
       );
       print('Error adding notification: $e');
     }
+>>>>>>> d3090b9a11170965166d3e1cc7304c151f48aaac
   }
 
   Future<void> sendScheduledNotification(
@@ -167,6 +184,9 @@ class _HelloWorldPageState extends State<HelloWorldPage> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
+<<<<<<< HEAD
+                    builder: (context) => ManageNotificationsPage()),
+=======
                   builder: (context) => ManageNotificationsPage(
                     flutterLocalNotificationsPlugin:
                         flutterLocalNotificationsPlugin,
@@ -178,6 +198,7 @@ class _HelloWorldPageState extends State<HelloWorldPage> {
                     },
                   ),
                 ),
+>>>>>>> d3090b9a11170965166d3e1cc7304c151f48aaac
               );
             },
           ),
