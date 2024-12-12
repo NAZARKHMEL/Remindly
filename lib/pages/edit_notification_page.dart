@@ -95,8 +95,8 @@ class _EditNotificationPageState extends State<EditNotificationPage> {
               onPressed: () => Navigator.pop(context), // Закриваємо без змін
               child: const Text('Відмінить'),
             ),
-            const SizedBox(width: 10), // Додаємо проміжок між кнопками
-            ElevatedButton(
+            const SizedBox(width: 5), // Додаємо проміжок між кнопками
+            TextButton(
               onPressed: _saveChanges, // Зберігаємо зміни
               child: const Text('Зберегти'),
             ),
