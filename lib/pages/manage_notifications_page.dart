@@ -14,7 +14,7 @@ class ManageNotificationsPage extends StatefulWidget {
   final Function(List<NotificationData>)
       onNotificationsUpdated; // Коллбэк для обновления
 
-  ManageNotificationsPage({
+  const ManageNotificationsPage({super.key, 
     required this.flutterLocalNotificationsPlugin,
     required this.notifications,
     required this.onNotificationsUpdated,
@@ -80,7 +80,7 @@ class _ManageNotificationsPageState extends State<ManageNotificationsPage> {
   }
 
   Future<void> _addNotificationToPlugin(NotificationData notification) async {
-    final notificationDetails = NotificationDetails(
+    final notificationDetails = const NotificationDetails(
       iOS: DarwinNotificationDetails(),
     );
     await widget.flutterLocalNotificationsPlugin.zonedSchedule(
@@ -99,7 +99,7 @@ class _ManageNotificationsPageState extends State<ManageNotificationsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Список напоминаний'),
+        title: const Text('Список напоминаний'),
       ),
       body: ListView.builder(
         itemCount: _notifications.length,
@@ -113,7 +113,7 @@ class _ManageNotificationsPageState extends State<ManageNotificationsPage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 IconButton(
-                  icon: Icon(Icons.edit),
+                  icon: const Icon(Icons.edit),
                   onPressed: () {
                     showDialog(
                       context: context,
@@ -128,7 +128,7 @@ class _ManageNotificationsPageState extends State<ManageNotificationsPage> {
                   },
                 ),
                 IconButton(
-                  icon: Icon(Icons.delete),
+                  icon: const Icon(Icons.delete),
                   onPressed: () {
                     _deleteNotification(notification.id);
                   },

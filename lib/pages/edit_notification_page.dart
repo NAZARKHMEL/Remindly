@@ -6,7 +6,7 @@ class EditNotificationPage extends StatefulWidget {
   final NotificationData notification;
   final Function(DateTime, String) onEdit;
 
-  EditNotificationPage({
+  const EditNotificationPage({super.key, 
     required this.notification,
     required this.onEdit,
   });
@@ -57,7 +57,7 @@ class _EditNotificationPageState extends State<EditNotificationPage> {
     // Проверка на пустое поле сообщения или не выбранную дату
     if (_messageController.text.isEmpty || _selectedDateTime == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Заполните все поля перед сохранением')),
+        const SnackBar(content: Text('Заполните все поля перед сохранением')),
       );
       return;
     }
@@ -70,15 +70,15 @@ class _EditNotificationPageState extends State<EditNotificationPage> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Редактировать напоминание'),
+      title: const Text('Редактировать напоминание'),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           TextField(
             controller: _messageController,
-            decoration: InputDecoration(labelText: 'Текст напоминания'),
+            decoration: const InputDecoration(labelText: 'Текст напоминания'),
           ),
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
           ElevatedButton(
             onPressed: () => _selectDateTime(context),
             child: Text(
@@ -92,11 +92,11 @@ class _EditNotificationPageState extends State<EditNotificationPage> {
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context),  // Закрываем без изменений
-          child: Text('Отмена'),
+          child: const Text('Отмена'),
         ),
         ElevatedButton(
           onPressed: _saveChanges,  // Сохраняем изменения
-          child: Text('Сохранить'),
+          child: const Text('Сохранить'),
         ),
       ],
     );

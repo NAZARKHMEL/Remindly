@@ -8,6 +8,8 @@ import '../models/notification_data.dart';
 import '../sharedpreferences.dart';
 
 class HelloWorldPage extends StatefulWidget {
+  const HelloWorldPage({super.key});
+
   @override
   _HelloWorldPageState createState() => _HelloWorldPageState();
 }
@@ -30,7 +32,7 @@ class _HelloWorldPageState extends State<HelloWorldPage> {
 
   void _initializeNotifications() async {
     final DarwinInitializationSettings darwinInitializationSettings =
-        DarwinInitializationSettings(
+        const DarwinInitializationSettings(
       requestAlertPermission: true,
       requestBadgePermission: true,
       requestSoundPermission: true,
@@ -92,7 +94,7 @@ class _HelloWorldPageState extends State<HelloWorldPage> {
     if (_messageController.text.isEmpty || _selectedDateTime == null) {
       // Покажем ошибку, если нет сообщения или даты
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Введите сообщение и выберите дату')),
+        const SnackBar(content: Text('Введите сообщение и выберите дату')),
       );
       return;
     }
@@ -106,15 +108,8 @@ class _HelloWorldPageState extends State<HelloWorldPage> {
         scheduledDate: _selectedDateTime!,
       );
 
-<<<<<<< HEAD
-    // Send scheduled notification
     await sendScheduledNotification(
         newNotification.scheduledDate, newNotification.message);
-=======
-      // Отправляем уведомление
-      await sendScheduledNotification(
-          newNotification.scheduledDate, newNotification.message);
->>>>>>> d3090b9a11170965166d3e1cc7304c151f48aaac
 
       // Добавляем новое уведомление в список
       _notifications.add(newNotification);
@@ -122,8 +117,7 @@ class _HelloWorldPageState extends State<HelloWorldPage> {
       // Сохраняем обновленный список уведомлений в SharedPreferences
       await NotificationStorage.saveNotifications(_notifications);
 
-<<<<<<< HEAD
-    // Refresh the list of notifications and clear the input fields
+
     setState(() {
       _messageController.clear();
       _selectedDateTime = null;
@@ -131,10 +125,9 @@ class _HelloWorldPageState extends State<HelloWorldPage> {
 
     // Reload notifications after saving
     await _loadNotifications();
-=======
-      // Покажем сообщение об успехе
+
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Напоминание успешно добавлено')),
+        const SnackBar(content: Text('Напоминание успешно добавлено')),
       );
 
       // Очищаем поля ввода и обновляем состояние
@@ -149,13 +142,13 @@ class _HelloWorldPageState extends State<HelloWorldPage> {
       );
       print('Error adding notification: $e');
     }
->>>>>>> d3090b9a11170965166d3e1cc7304c151f48aaac
+
   }
 
   Future<void> sendScheduledNotification(
       DateTime scheduledDate, String message) async {
     final DarwinNotificationDetails darwinNotificationDetails =
-        DarwinNotificationDetails();
+        const DarwinNotificationDetails();
     final NotificationDetails notificationDetails =
         NotificationDetails(iOS: darwinNotificationDetails);
 
@@ -175,18 +168,15 @@ class _HelloWorldPageState extends State<HelloWorldPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Notification App'),
+        title: const Text('Notification App'),
         actions: [
           // Add an IconButton to navigate to ManageNotificationsPage
           IconButton(
-            icon: Icon(Icons.list),
+            icon: const Icon(Icons.list),
             onPressed: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-<<<<<<< HEAD
-                    builder: (context) => ManageNotificationsPage()),
-=======
                   builder: (context) => ManageNotificationsPage(
                     flutterLocalNotificationsPlugin:
                         flutterLocalNotificationsPlugin,
@@ -197,22 +187,21 @@ class _HelloWorldPageState extends State<HelloWorldPage> {
                       });
                     },
                   ),
-                ),
->>>>>>> d3090b9a11170965166d3e1cc7304c151f48aaac
+                )
               );
             },
           ),
         ],
       ),
       body: Padding(
-        padding: EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
             TextField(
               controller: _messageController,
-              decoration: InputDecoration(labelText: 'Введите сообщение'),
+              decoration: const InputDecoration(labelText: 'Введите сообщение'),
             ),
-            SizedBox(height: 10),
+            const SizedBox(height: 10),
             Row(
               children: [
                 Expanded(
@@ -226,11 +215,11 @@ class _HelloWorldPageState extends State<HelloWorldPage> {
                     ),
                   ),
                 ),
-                SizedBox(width: 10),
+                const SizedBox(width: 10),
                 Expanded(
                   child: ElevatedButton(
                     onPressed: _addNotification,
-                    child: Text('Добавить напоминание'),
+                    child: const Text('Добавить напоминание'),
                   ),
                 ),
               ],
