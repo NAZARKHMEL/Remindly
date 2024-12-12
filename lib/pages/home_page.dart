@@ -23,6 +23,38 @@ class _HelloWorldPageState extends State<HelloWorldPage> {
   void initState() {
     super.initState();
     _loadNotifications();
+    tz_data.initializeTimeZones();
+    _initializeNotifications();
+    requestIOSPermissions();
+  }
+
+  void _initializeNotifications() async {
+    final DarwinInitializationSettings darwinInitializationSettings =
+        DarwinInitializationSettings(
+      requestAlertPermission: true,
+      requestBadgePermission: true,
+      requestSoundPermission: true,
+    );
+    final InitializationSettings initializationSettings =
+        InitializationSettings(iOS: darwinInitializationSettings);
+    await flutterLocalNotificationsPlugin.initialize(initializationSettings);
+  }
+
+  Future<void> requestIOSPermissions() async {
+    final bool? result = await flutterLocalNotificationsPlugin
+        .resolvePlatformSpecificImplementation<
+            IOSFlutterLocalNotificationsPlugin>()
+        ?.requestPermissions(
+          alert: true,
+          badge: true,
+          sound: true,
+        );
+
+    if (result != null && result) {
+      print('Разрешение на уведомления получено');
+    } else {
+      print('Разрешение на уведомления не получено');
+    }
   }
 
   Future<void> _loadNotifications() async {
@@ -58,30 +90,39 @@ class _HelloWorldPageState extends State<HelloWorldPage> {
 
   Future<void> _addNotification() async {
     if (_messageController.text.isEmpty || _selectedDateTime == null) {
+      // Покажем ошибку, если нет сообщения или даты
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Введите сообщение и выберите дату')),
       );
       return;
     }
 
-    final notificationId =
-        DateTime.now().millisecondsSinceEpoch.remainder(100000);
-    final newNotification = NotificationData(
-      id: notificationId,
-      message: _messageController.text,
-      scheduledDate: _selectedDateTime!,
-    );
+    try {
+      final notificationId =
+          DateTime.now().millisecondsSinceEpoch.remainder(100000);
+      final newNotification = NotificationData(
+        id: notificationId,
+        message: _messageController.text,
+        scheduledDate: _selectedDateTime!,
+      );
 
+<<<<<<< HEAD
     // Send scheduled notification
     await sendScheduledNotification(
         newNotification.scheduledDate, newNotification.message);
+=======
+      // Отправляем уведомление
+      await sendScheduledNotification(
+          newNotification.scheduledDate, newNotification.message);
+>>>>>>> d3090b9a11170965166d3e1cc7304c151f48aaac
 
-    // Add the new notification to the list
-    _notifications.add(newNotification);
+      // Добавляем новое уведомление в список
+      _notifications.add(newNotification);
 
-    // Save the updated notifications list to SharedPreferences
-    await NotificationStorage.saveNotifications(_notifications);
+      // Сохраняем обновленный список уведомлений в SharedPreferences
+      await NotificationStorage.saveNotifications(_notifications);
 
+<<<<<<< HEAD
     // Refresh the list of notifications and clear the input fields
     setState(() {
       _messageController.clear();
@@ -90,6 +131,25 @@ class _HelloWorldPageState extends State<HelloWorldPage> {
 
     // Reload notifications after saving
     await _loadNotifications();
+=======
+      // Покажем сообщение об успехе
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Напоминание успешно добавлено')),
+      );
+
+      // Очищаем поля ввода и обновляем состояние
+      setState(() {
+        _messageController.clear();
+        _selectedDateTime = null;
+      });
+    } catch (e) {
+      // Покажем ошибку, если что-то пошло не так
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Ошибка: $e')),
+      );
+      print('Error adding notification: $e');
+    }
+>>>>>>> d3090b9a11170965166d3e1cc7304c151f48aaac
   }
 
   Future<void> sendScheduledNotification(
@@ -124,7 +184,15 @@ class _HelloWorldPageState extends State<HelloWorldPage> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
+<<<<<<< HEAD
                     builder: (context) => ManageNotificationsPage()),
+=======
+                  builder: (context) => ManageNotificationsPage(
+                    flutterLocalNotificationsPlugin:
+                        flutterLocalNotificationsPlugin,
+                  ),
+                ),
+>>>>>>> d3090b9a11170965166d3e1cc7304c151f48aaac
               );
             },
           ),
