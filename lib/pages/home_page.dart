@@ -3,7 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest.dart' as tz_data;
-import 'manage_notifications_page.dart';  // Import the ManageNotificationsPage
+import 'manage_notifications_page.dart'; // Import the ManageNotificationsPage
 import '../models/notification_data.dart';
 import '../sharedpreferences.dart';
 
@@ -73,7 +73,8 @@ class _HelloWorldPageState extends State<HelloWorldPage> {
     );
 
     // Send scheduled notification
-    await sendScheduledNotification(newNotification.scheduledDate, newNotification.message);
+    await sendScheduledNotification(
+        newNotification.scheduledDate, newNotification.message);
 
     // Add the new notification to the list
     _notifications.add(newNotification);
@@ -81,14 +82,18 @@ class _HelloWorldPageState extends State<HelloWorldPage> {
     // Save the updated notifications list to SharedPreferences
     await NotificationStorage.saveNotifications(_notifications);
 
-    // Clear input and update state
+    // Refresh the list of notifications and clear the input fields
     setState(() {
       _messageController.clear();
       _selectedDateTime = null;
     });
+
+    // Reload notifications after saving
+    await _loadNotifications();
   }
 
-  Future<void> sendScheduledNotification(DateTime scheduledDate, String message) async {
+  Future<void> sendScheduledNotification(
+      DateTime scheduledDate, String message) async {
     final DarwinNotificationDetails darwinNotificationDetails =
         DarwinNotificationDetails();
     final NotificationDetails notificationDetails =
@@ -118,7 +123,8 @@ class _HelloWorldPageState extends State<HelloWorldPage> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => ManageNotificationsPage()),
+                MaterialPageRoute(
+                    builder: (context) => ManageNotificationsPage()),
               );
             },
           ),
@@ -141,7 +147,8 @@ class _HelloWorldPageState extends State<HelloWorldPage> {
                     child: Text(
                       _selectedDateTime == null
                           ? 'Выбрать дату'
-                          : DateFormat('yyyy-MM-dd HH:mm').format(_selectedDateTime!),
+                          : DateFormat('yyyy-MM-dd HH:mm')
+                              .format(_selectedDateTime!),
                     ),
                   ),
                 ),
