@@ -12,7 +12,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Notification App',
+      title: 'Remindly',
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),

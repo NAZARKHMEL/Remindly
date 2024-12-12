@@ -96,11 +96,11 @@ class _ManageNotificationsPageState extends State<ManageNotificationsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Manage Notifications'),
+        title: const Text('Список Нагадувань'),
       ),
       body: _notifications.isEmpty
           ? const Center(
-              child: Text('No notifications available.'),
+              child: Text('Нагадувань нема.'),
             )
           : ListView.builder(
               itemCount: _notifications.length,

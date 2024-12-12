@@ -94,7 +94,7 @@ class _HelloWorldPageState extends State<HelloWorldPage> {
     if (_messageController.text.isEmpty || _selectedDateTime == null) {
       // Покажем ошибку, если нет сообщения или даты
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Введите сообщение и выберите дату')),
+        const SnackBar(content: Text('Введіть повідомлення і виберіть дату')),
       );
       return;
     }
@@ -108,8 +108,8 @@ class _HelloWorldPageState extends State<HelloWorldPage> {
         scheduledDate: _selectedDateTime!,
       );
 
-    await sendScheduledNotification(
-        newNotification.scheduledDate, newNotification.message);
+      await sendScheduledNotification(
+          newNotification.scheduledDate, newNotification.message);
 
       // Добавляем новое уведомление в список
       _notifications.add(newNotification);
@@ -117,17 +117,16 @@ class _HelloWorldPageState extends State<HelloWorldPage> {
       // Сохраняем обновленный список уведомлений в SharedPreferences
       await NotificationStorage.saveNotifications(_notifications);
 
+      setState(() {
+        _messageController.clear();
+        _selectedDateTime = null;
+      });
 
-    setState(() {
-      _messageController.clear();
-      _selectedDateTime = null;
-    });
-
-    // Reload notifications after saving
-    await _loadNotifications();
+      // Reload notifications after saving
+      await _loadNotifications();
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Напоминание успешно добавлено')),
+        const SnackBar(content: Text('Нагадування додано')),
       );
 
       // Очищаем поля ввода и обновляем состояние
@@ -138,11 +137,10 @@ class _HelloWorldPageState extends State<HelloWorldPage> {
     } catch (e) {
       // Покажем ошибку, если что-то пошло не так
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Ошибка: $e')),
+        SnackBar(content: Text('Помилка: $e')),
       );
       print('Error adding notification: $e');
     }
-
   }
 
   Future<void> sendScheduledNotification(
@@ -154,7 +152,7 @@ class _HelloWorldPageState extends State<HelloWorldPage> {
 
     await flutterLocalNotificationsPlugin.zonedSchedule(
       DateTime.now().millisecondsSinceEpoch.remainder(100000),
-      'Напоминание',
+      'Нагадування',
       message,
       tz.TZDateTime.from(scheduledDate, tz.local),
       notificationDetails,
@@ -168,7 +166,7 @@ class _HelloWorldPageState extends State<HelloWorldPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Notification App'),
+        title: const Text('Remindly'),
         actions: [
           // Add an IconButton to navigate to ManageNotificationsPage
           IconButton(
@@ -187,7 +185,7 @@ class _HelloWorldPageState extends State<HelloWorldPage> {
                       });
                     },
                   ),
-                )
+                ),
               );
             },
           ),
@@ -199,28 +197,26 @@ class _HelloWorldPageState extends State<HelloWorldPage> {
           children: [
             TextField(
               controller: _messageController,
-              decoration: const InputDecoration(labelText: 'Введите сообщение'),
+              decoration:
+                  const InputDecoration(labelText: 'Введіть повідомлення'),
             ),
             const SizedBox(height: 10),
-            Row(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: () => _selectDateTime(context),
-                    child: Text(
-                      _selectedDateTime == null
-                          ? 'Выбрать дату'
-                          : DateFormat('yyyy-MM-dd HH:mm')
-                              .format(_selectedDateTime!),
-                    ),
+                ElevatedButton(
+                  onPressed: () => _selectDateTime(context),
+                  child: Text(
+                    _selectedDateTime == null
+                        ? 'Виберіть дату'
+                        : DateFormat('yyyy-MM-dd HH:mm')
+                            .format(_selectedDateTime!),
                   ),
                 ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: _addNotification,
-                    child: const Text('Добавить напоминание'),
-                  ),
+                const SizedBox(height: 10),
+                ElevatedButton(
+                  onPressed: _addNotification,
+                  child: const Text('Додати нагадування'),
                 ),
               ],
             ),

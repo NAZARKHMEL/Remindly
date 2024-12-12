@@ -6,7 +6,8 @@ class EditNotificationPage extends StatefulWidget {
   final NotificationData notification;
   final Function(DateTime, String) onEdit;
 
-  const EditNotificationPage({super.key, 
+  const EditNotificationPage({
+    super.key,
     required this.notification,
     required this.onEdit,
   });
@@ -57,46 +58,49 @@ class _EditNotificationPageState extends State<EditNotificationPage> {
     // Проверка на пустое поле сообщения или не выбранную дату
     if (_messageController.text.isEmpty || _selectedDateTime == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Заполните все поля перед сохранением')),
+        const SnackBar(content: Text('Заповніть всі поля перед сбереженням')),
       );
       return;
     }
 
     // Передаем изменения обратно в родительский виджет
     widget.onEdit(_selectedDateTime!, _messageController.text);
-    Navigator.pop(context);  // Закрываем экран редактирования
+    Navigator.pop(context); // Закрываем экран редактирования
   }
 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Редактировать напоминание'),
+      title: const Text('Редагувати нагадування'),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           TextField(
             controller: _messageController,
-            decoration: const InputDecoration(labelText: 'Текст напоминания'),
+            decoration: const InputDecoration(labelText: 'Текст нагадування'),
           ),
           const SizedBox(height: 10),
           ElevatedButton(
             onPressed: () => _selectDateTime(context),
-            child: Text(
-              _selectedDateTime == null
-                  ? 'Выбрать дату'
-                  : DateFormat('yyyy-MM-dd HH:mm').format(_selectedDateTime!),
-            ),
+            child: Text("Змінити дату"),
           ),
         ],
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),  // Закрываем без изменений
-          child: const Text('Отмена'),
-        ),
-        ElevatedButton(
-          onPressed: _saveChanges,  // Сохраняем изменения
-          child: const Text('Сохранить'),
+        Row(
+          mainAxisAlignment:
+              MainAxisAlignment.end, // Розмістимо кнопки по правому краю
+          children: [
+            TextButton(
+              onPressed: () => Navigator.pop(context), // Закриваємо без змін
+              child: const Text('Відмінить'),
+            ),
+            const SizedBox(width: 10), // Додаємо проміжок між кнопками
+            ElevatedButton(
+              onPressed: _saveChanges, // Зберігаємо зміни
+              child: const Text('Зберегти'),
+            ),
+          ],
         ),
       ],
     );
