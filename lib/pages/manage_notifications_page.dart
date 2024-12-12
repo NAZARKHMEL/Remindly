@@ -10,8 +10,15 @@ import 'package:timezone/data/latest.dart' as tz_data;
 
 class ManageNotificationsPage extends StatefulWidget {
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
+  final List<NotificationData> notifications; // Передаем список уведомлений
+  final Function(List<NotificationData>)
+      onNotificationsUpdated; // Коллбэк для обновления
 
-  ManageNotificationsPage({required this.flutterLocalNotificationsPlugin});
+  ManageNotificationsPage({
+    required this.flutterLocalNotificationsPlugin,
+    required this.notifications,
+    required this.onNotificationsUpdated,
+  });
 
   @override
   _ManageNotificationsPageState createState() =>
@@ -54,9 +61,9 @@ class _ManageNotificationsPageState extends State<ManageNotificationsPage> {
   }
 
   Future<void> _deleteNotification(int id) async {
-    _notifications.removeWhere((notification) => notification.id == id);
-    await widget.flutterLocalNotificationsPlugin.cancel(id); // Удаляем уведомление из плагина
-    await NotificationStorage.saveNotifications(_notifications);
+    widget.notifications.removeWhere((notification) => notification.id == id);
+    await widget.flutterLocalNotificationsPlugin.cancel(id);
+    widget.onNotificationsUpdated(widget.notifications);
     setState(() {});
   }
 
@@ -64,9 +71,11 @@ class _ManageNotificationsPageState extends State<ManageNotificationsPage> {
       NotificationData notification, DateTime newDate, String newMessage) {
     notification.scheduledDate = newDate;
     notification.message = newMessage;
-    widget.flutterLocalNotificationsPlugin.cancel(notification.id); // Удаляем старое уведомление
+    widget.flutterLocalNotificationsPlugin
+        .cancel(notification.id); // Удаляем старое уведомление
     NotificationStorage.saveNotifications(_notifications);
-    _addNotificationToPlugin(notification); // Добавляем обновленное уведомление в плагин
+    _addNotificationToPlugin(
+        notification); // Добавляем обновленное уведомление в плагин
     setState(() {});
   }
 
@@ -81,7 +90,8 @@ class _ManageNotificationsPageState extends State<ManageNotificationsPage> {
       tz.TZDateTime.from(notification.scheduledDate, tz.local),
       notificationDetails,
       payload: 'custom_payload',
-      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
     );
   }
 
@@ -97,7 +107,8 @@ class _ManageNotificationsPageState extends State<ManageNotificationsPage> {
           final notification = _notifications[index];
           return ListTile(
             title: Text(notification.message),
-            subtitle: Text(DateFormat('yyyy-MM-dd HH:mm').format(notification.scheduledDate)),
+            subtitle: Text(DateFormat('yyyy-MM-dd HH:mm')
+                .format(notification.scheduledDate)),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -109,7 +120,8 @@ class _ManageNotificationsPageState extends State<ManageNotificationsPage> {
                       builder: (context) => EditNotificationPage(
                         notification: notification,
                         onEdit: (newDate, newMessage) {
-                          _updateNotification(notification, newDate, newMessage);
+                          _updateNotification(
+                              notification, newDate, newMessage);
                         },
                       ),
                     );

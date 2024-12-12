@@ -170,6 +170,12 @@ class _HelloWorldPageState extends State<HelloWorldPage> {
                   builder: (context) => ManageNotificationsPage(
                     flutterLocalNotificationsPlugin:
                         flutterLocalNotificationsPlugin,
+                    notifications: _notifications,
+                    onNotificationsUpdated: (updatedNotifications) {
+                      setState(() {
+                        _notifications = updatedNotifications;
+                      });
+                    },
                   ),
                 ),
               );
