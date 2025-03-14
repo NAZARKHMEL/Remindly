@@ -71,18 +71,18 @@ class _EditNotificationPageState extends State<EditNotificationPage> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('Редагувати нагадування'),
+      title: const Text('Update Notification'),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           TextField(
             controller: _messageController,
-            decoration: const InputDecoration(labelText: 'Текст нагадування'),
+            decoration: const InputDecoration(labelText: 'Notification content'),
           ),
           const SizedBox(height: 10),
           ElevatedButton(
             onPressed: () => _selectDateTime(context),
-            child: Text("Змінити дату"),
+            child: Text("Change date"),
           ),
         ],
       ),
@@ -93,12 +93,12 @@ class _EditNotificationPageState extends State<EditNotificationPage> {
           children: [
             TextButton(
               onPressed: () => Navigator.pop(context), // Закриваємо без змін
-              child: const Text('Відмінить'),
+              child: const Text('Cancel'),
             ),
             const SizedBox(width: 5), // Додаємо проміжок між кнопками
             TextButton(
               onPressed: _saveChanges, // Зберігаємо зміни
-              child: const Text('Зберегти'),
+              child: const Text('Save'),
             ),
           ],
         ),
