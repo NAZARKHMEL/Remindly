@@ -198,7 +198,7 @@ class _HelloWorldPageState extends State<HelloWorldPage> {
             TextField(
               controller: _messageController,
               decoration:
-                  const InputDecoration(labelText: 'Введіть повідомлення'),
+                  const InputDecoration(labelText: 'Notification content'),
             ),
             const SizedBox(height: 10),
             Column(
@@ -208,7 +208,7 @@ class _HelloWorldPageState extends State<HelloWorldPage> {
                   onPressed: () => _selectDateTime(context),
                   child: Text(
                     _selectedDateTime == null
-                        ? 'Виберіть дату'
+                        ? 'Choose date'
                         : DateFormat('yyyy-MM-dd HH:mm')
                             .format(_selectedDateTime!),
                   ),
@@ -216,7 +216,7 @@ class _HelloWorldPageState extends State<HelloWorldPage> {
                 const SizedBox(height: 10),
                 ElevatedButton(
                   onPressed: _addNotification,
-                  child: const Text('Додати нагадування'),
+                  child: const Text('Add Notification'),
                 ),
               ],
             ),
